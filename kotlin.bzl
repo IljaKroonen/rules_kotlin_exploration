@@ -61,11 +61,16 @@ def _kt_jvm_library_impl(ctx):
         content = "abc",
     )
 
+    exports = []
+    for export in ctx.attr.exports:
+        exports.append(export[JavaInfo])
+
     return [
         JavaInfo(
             output_jar = ctx.outputs.jar,
             compile_jar = ctx.outputs.jar,
             runtime_deps = runtime_deps,
+            exports = exports,
         )
     ]
 
@@ -100,7 +105,14 @@ kt_jvm_library = rule(
             doc = """The list of source files that are processed to create the target.""",
             allow_files = [".kt"],
             default = [],
-        )
+        ),
+        "exports": attr.label_list(
+            doc = """Exported libraries.""",
+            providers = [
+                [JavaInfo],
+            ],
+            allow_files = False,
+        ),
     },
     provides = [JavaInfo],
     outputs = {
