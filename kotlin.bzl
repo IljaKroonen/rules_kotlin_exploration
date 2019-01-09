@@ -175,6 +175,7 @@ def kt_jvm_test(
     deps = [],
     data = [],
     resources = [],
+    jvm_flags = None,
     local = None,
     visibility = None,
 ):
@@ -193,4 +194,5 @@ def kt_jvm_test(
         test_class = test_class,
         visibility = visibility,
         local = local,
+        jvm_flags = jvm_flags,
     )
