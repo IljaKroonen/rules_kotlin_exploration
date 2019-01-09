@@ -1,0 +1,5 @@
+build:docker_sandbox --experimental_docker_image=java
+build:docker_sandbox --spawn_strategy=docker --strategy=Javac=docker --genrule_strategy=docker
+build:docker_sandbox --define=EXECUTOR=remote
+build:docker_sandbox --experimental_docker_verbose
+build:docker_sandbox --experimental_enable_docker_sandbox

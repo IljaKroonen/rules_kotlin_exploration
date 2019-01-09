@@ -1,0 +1,40 @@
+filegroup(
+    name = "kotlinc_files",
+    data = glob([
+        "bin/**/*",
+        "lib/**/*",
+    ]),
+    visibility = [
+        "//visibility:public",
+    ],
+)
+
+java_import(
+    name = "kotlin-stdlib",
+    jars = [
+        "lib/kotlin-stdlib.jar",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+)
+
+java_import(
+    name = "kotlin-reflect",
+    jars = [
+        "lib/kotlin-reflect.jar",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+)
+
+java_import(
+    name = "kotlin-script-runtime",
+    jars = [
+        "lib/kotlin-script-runtime.jar",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+)

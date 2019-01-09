@@ -1,0 +1,14 @@
+workspace(name = "hello_world")
+
+local_repository(
+    name = "com_github_iljakroonen_rules_kotlin",
+    path = "../..",
+)
+
+load("@com_github_iljakroonen_rules_kotlin//:repositories.bzl", "kotlin_repositories")
+
+kotlin_repositories()
+
+load("//third_party/jvm:workspace.bzl", "maven_dependencies")
+
+maven_dependencies()
