@@ -179,6 +179,7 @@ def kt_jvm_test(
     local = None,
     visibility = None,
     size = "medium",
+    tags = [],
 ):
     kt_jvm_library(
         name = "%s_lib" % name,
@@ -197,4 +198,5 @@ def kt_jvm_test(
         local = local,
         jvm_flags = jvm_flags,
         size = size,
+        tags = tags,
     )
