@@ -163,11 +163,13 @@ def kt_jvm_test(
     deps = [],
     data = [],
     resources = [],
+    visibility = None,
 ):
     kt_jvm_library(
         name = "%s_lib" % name,
         deps = deps,
         srcs = srcs,
+        visibility = ["//visibility:private"],
     )
 
     native.java_test(
@@ -176,4 +178,5 @@ def kt_jvm_test(
         data = data,
         resources = resources,
         test_class = test_class,
+        visibility = visibility,
     )
