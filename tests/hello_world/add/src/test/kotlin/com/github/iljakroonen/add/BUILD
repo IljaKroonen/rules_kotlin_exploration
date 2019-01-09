@@ -8,4 +8,5 @@ kt_jvm_test(
         "//add/src/main/kotlin/com/github/iljakroonen/add",
         "//third_party:test_deps",
     ],
+    local = True,
 )

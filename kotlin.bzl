@@ -175,6 +175,7 @@ def kt_jvm_test(
     deps = [],
     data = [],
     resources = [],
+    local = None,
     visibility = None,
 ):
     kt_jvm_library(
@@ -191,4 +192,5 @@ def kt_jvm_test(
         resources = resources,
         test_class = test_class,
         visibility = visibility,
+        local = local,
     )
