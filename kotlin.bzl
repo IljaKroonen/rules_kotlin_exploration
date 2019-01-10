@@ -36,18 +36,21 @@ def _kt_jvm_library_impl(ctx):
     else:
         jdk_home = jdk_file.dirname[:-4]
 
+    compile_kotlin_deploy_jar = ctx.attr._compile_kotlin.files.to_list()[0]
+
     ctx.actions.run(
-        executable = "external/org_jetbrains_kotlin/bin/kotlinc",
-        inputs = src_files + dep_jars + ctx.attr._java_runtime.files.to_list(),
+        executable = "%s/jre/bin/java" % jdk_home,
+        inputs = src_files + dep_jars + ctx.attr._java_runtime.files.to_list() + ctx.attr._compile_kotlin.files.to_list(),
         tools = ctx.attr._compiler.data_runfiles.files.to_list(),
         progress_message = """Compiling %s kotlin source files""" % len(ctx.attr.srcs),
-        arguments = src_file_paths + [
-            "-d",
-            ctx.outputs.jar.path,
-            "-cp",
-            ctx.host_configuration.host_path_separator.join(compile_cp),
-            "-jdk-home",
+        arguments = [
+            "-jar",
+            compile_kotlin_deploy_jar.path,
+            "external/org_jetbrains_kotlin/bin/kotlinc",
             jdk_home,
+            ctx.host_configuration.host_path_separator.join(src_file_paths),
+            ctx.host_configuration.host_path_separator.join(compile_cp),
+            ctx.outputs.jar.path,
         ],
         outputs = [
             ctx.outputs.jar,
@@ -86,6 +89,10 @@ kt_jvm_library = rule(
         ),
         "_java_runtime": attr.label(
             default = Label("@bazel_tools//tools/jdk:current_java_runtime"),
+        ),
+        "_compile_kotlin": attr.label(
+            default = Label("@com_github_iljakroonen_rules_kotlin//src/main/java/com/github/iljakroonen/rules/kotlin:CompileKotlin_deploy.jar"),
+            allow_single_file = True,
         ),
         "deps": attr.label_list(
             doc = """The list of libraries to link into this library.""",
