@@ -10,9 +10,9 @@ def _kt_jvm_library_impl(ctx):
     dep_jars = []
     runtime_deps = [
         JavaInfo(
-                    output_jar = ctx.attr._kotlin_stdlib.files.to_list()[0],
-                    compile_jar = ctx.attr._kotlin_stdlib.files.to_list()[0],
-                ),
+            output_jar = ctx.attr._kotlin_stdlib.files.to_list()[0],
+            compile_jar = ctx.attr._kotlin_stdlib.files.to_list()[0],
+        ),
     ]
     for dep in ctx.attr.deps:
         java_info = dep[JavaInfo]
@@ -76,7 +76,7 @@ def _kt_jvm_library_impl(ctx):
             compile_jar = ctx.outputs.jar,
             runtime_deps = runtime_deps,
             exports = exports,
-        )
+        ),
     ]
 
 kt_jvm_library = rule(
@@ -171,25 +171,24 @@ kt_jvm_import = rule(
         "runtime_deps": attr.label_list(
             default = [],
             providers = [JavaInfo],
-        )
+        ),
     },
     implementation = _kt_jvm_import_impl,
     provides = [JavaInfo],
 )
 
 def kt_jvm_test(
-    name,
-    srcs,
-    test_class,
-    deps = [],
-    data = [],
-    resources = [],
-    jvm_flags = None,
-    local = None,
-    visibility = None,
-    size = "medium",
-    tags = [],
-):
+        name,
+        srcs,
+        test_class,
+        deps = [],
+        data = [],
+        resources = [],
+        jvm_flags = None,
+        local = None,
+        visibility = None,
+        size = "medium",
+        tags = []):
     kt_jvm_library(
         name = "%s_lib" % name,
         deps = deps,
