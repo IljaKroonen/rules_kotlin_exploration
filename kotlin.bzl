@@ -53,17 +53,14 @@ def _kt_jvm_library_impl(ctx):
             ctx.host_configuration.host_path_separator.join(compile_cp),
             ctx.outputs.jar.path,
             module_name,
+            ctx.outputs.srcjar.path,
         ],
         outputs = [
             ctx.outputs.jar,
+            ctx.outputs.srcjar,
         ],
         mnemonic = "KotlinCompile",
         use_default_shell_env = False,
-    )
-
-    ctx.actions.write(
-        output = ctx.outputs.srcjar,
-        content = "abc",
     )
 
     exports = []
