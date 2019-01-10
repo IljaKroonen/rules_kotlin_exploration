@@ -38,6 +38,7 @@ def _kt_jvm_library_impl(ctx):
 
     compile_kotlin_deploy_jar = ctx.attr._compile_kotlin.files.to_list()[0]
 
+    module_name = ctx.label.package.replace("/", "_") + "-" + ctx.label.name
     ctx.actions.run(
         executable = "%s/jre/bin/java" % jdk_home,
         inputs = src_files + dep_jars + ctx.attr._java_runtime.files.to_list() + ctx.attr._compile_kotlin.files.to_list(),
@@ -51,6 +52,7 @@ def _kt_jvm_library_impl(ctx):
             ctx.host_configuration.host_path_separator.join(src_file_paths),
             ctx.host_configuration.host_path_separator.join(compile_cp),
             ctx.outputs.jar.path,
+            module_name,
         ],
         outputs = [
             ctx.outputs.jar,

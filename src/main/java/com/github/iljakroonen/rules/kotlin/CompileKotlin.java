@@ -16,6 +16,7 @@ class CompileKotlin {
             String[] kotlinSources = args[2].split(System.getProperty("path.separator"));
             String compileClasspath = args[3];
             Path outputJar = Paths.get(args[4]);
+            String moduleName = args[5];
 
             Path tempCompilationDirectory = Files.createTempDirectory("kotlinc_outputs");
 
@@ -25,7 +26,9 @@ class CompileKotlin {
                     "-cp",
                     compileClasspath,
                     "-jdk-home",
-                    jdkHome
+                    jdkHome,
+                    "-module-name",
+                    moduleName
             };
 
             ArrayList<String> kotlincArgs = new ArrayList<>();
@@ -40,7 +43,8 @@ class CompileKotlin {
 
             int outCode = process.waitFor();
 
-            assert (outCode == 0);
+            if (outCode != 0)
+                System.exit(outCode);
 
             JarCreator jarCreator = new JarCreator(outputJar);
             jarCreator.addDirectory(tempCompilationDirectory);
