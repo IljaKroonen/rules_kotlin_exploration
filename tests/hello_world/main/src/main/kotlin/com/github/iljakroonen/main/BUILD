@@ -14,6 +14,9 @@ kt_jvm_library(
     srcs = [
         "HelloWorld.kt",
     ],
+    resources = [
+        "//main/src/main/resources",
+    ],
     deps = [
         ":logging",
         "//add/src/main/kotlin/com/github/iljakroonen/add",

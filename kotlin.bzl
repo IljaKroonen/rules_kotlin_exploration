@@ -38,10 +38,17 @@ def _kt_jvm_library_impl(ctx):
 
     compile_kotlin_deploy_jar = ctx.attr._compile_kotlin.files.to_list()[0]
 
+    resource_paths = []
+    resource_files = []
+    for resource_label in ctx.attr.resources:
+        for resource_file in resource_label.files:
+            resource_paths.append(resource_file.path)
+            resource_files.append(resource_file)
+
     module_name = ctx.label.package.replace("/", "_") + "-" + ctx.label.name
     ctx.actions.run(
         executable = "%s/jre/bin/java" % jdk_home,
-        inputs = src_files + dep_jars + ctx.attr._java_runtime.files.to_list() + ctx.attr._compile_kotlin.files.to_list(),
+        inputs = src_files + dep_jars + ctx.attr._java_runtime.files.to_list() + ctx.attr._compile_kotlin.files.to_list() + resource_files,
         tools = ctx.attr._compiler.data_runfiles.files.to_list(),
         progress_message = """Compiling %s kotlin source files""" % len(ctx.attr.srcs),
         arguments = [
@@ -54,6 +61,7 @@ def _kt_jvm_library_impl(ctx):
             ctx.outputs.jar.path,
             module_name,
             ctx.outputs.srcjar.path,
+            ctx.host_configuration.host_path_separator.join(resource_paths),
         ],
         outputs = [
             ctx.outputs.jar,
@@ -118,6 +126,11 @@ kt_jvm_library = rule(
                 [JavaInfo],
             ],
             allow_files = False,
+        ),
+        "resources": attr.label_list(
+            doc = """Resources to be included in the jar.""",
+            allow_files = True,
+            default = [],
         ),
     },
     provides = [JavaInfo],

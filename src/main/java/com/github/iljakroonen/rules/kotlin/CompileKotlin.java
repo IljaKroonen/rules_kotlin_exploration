@@ -21,6 +21,7 @@ class CompileKotlin {
             Path outputJar = Paths.get(args[4]);
             String moduleName = args[5];
             Path outputSourceJar = Paths.get(args[6]);
+            String[] resources = args[7].split(System.getProperty("path.separator"));
 
             Path tempCompilationDirectory = Files.createTempDirectory("kotlinc_outputs");
 
@@ -52,6 +53,34 @@ class CompileKotlin {
 
             JarCreator jarCreator = new JarCreator(outputJar);
             jarCreator.addDirectory(tempCompilationDirectory);
+
+            List<String> sortedResources = Arrays.asList(resources);
+            Collections.sort(sortedResources);
+            for (String resource : sortedResources) {
+                Path resourcePath = Paths.get(resource);
+                boolean foundSrc = false;
+                boolean foundResources = false;
+                ArrayList<String> targetLocationPathParts = new ArrayList<>();
+
+                for (Path pathPart : resourcePath) {
+                    if (foundResources) {
+                        targetLocationPathParts.add(pathPart.toString());
+                    }
+
+                    if (pathPart.toString().equals("src")) {
+                        foundSrc = true;
+                    }
+
+                    if (foundSrc && pathPart.toString().equals("resources")) {
+                        foundResources = true;
+                    }
+                }
+
+                String destinationInJar = String.join("/", targetLocationPathParts);
+
+                jarCreator.addEntry(destinationInJar, resourcePath);
+            }
+
             jarCreator.setCompression(true);
             jarCreator.setNormalize(true);
             jarCreator.execute();
