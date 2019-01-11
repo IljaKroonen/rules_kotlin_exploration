@@ -105,7 +105,7 @@ class CompileKotlin {
                     if (line.startsWith("package ")) {
                         String withPossibleTrailingSemicolon = line.substring("package ".length()).trim();
                         if (withPossibleTrailingSemicolon.endsWith(";"))
-                            packageName = withPossibleTrailingSemicolon.substring(0, line.length() - 1);
+                            packageName = withPossibleTrailingSemicolon.substring(0, withPossibleTrailingSemicolon.length() - 1).trim();
                         else
                             packageName = withPossibleTrailingSemicolon;
 
