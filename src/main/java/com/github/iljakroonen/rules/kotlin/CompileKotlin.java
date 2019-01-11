@@ -22,6 +22,7 @@ class CompileKotlin {
             String moduleName = args[5];
             Path outputSourceJar = Paths.get(args[6]);
             String[] resources = args[7].split(System.getProperty("path.separator"));
+            String kotlinHome = args[8];
 
             Path tempCompilationDirectory = Files.createTempDirectory("kotlinc_outputs");
 
@@ -35,7 +36,9 @@ class CompileKotlin {
                     "-module-name",
                     moduleName,
                     "-jvm-target",
-                    "1.8"
+                    "1.8",
+                    "-kotlin-home",
+                    kotlinHome
             };
 
             ArrayList<String> kotlincArgs = new ArrayList<>();

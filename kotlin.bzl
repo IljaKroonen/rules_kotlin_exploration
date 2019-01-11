@@ -62,6 +62,7 @@ def _kt_jvm_library_impl(ctx):
             module_name,
             ctx.outputs.srcjar.path,
             ctx.host_configuration.host_path_separator.join(resource_paths),
+            "external/org_jetbrains_kotlin",
         ],
         outputs = [
             ctx.outputs.jar,
