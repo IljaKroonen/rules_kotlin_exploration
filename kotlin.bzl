@@ -217,6 +217,7 @@ def kt_jvm_test(
         deps = deps,
         srcs = srcs,
         visibility = ["//visibility:private"],
+        testonly = True,
     )
 
     native.java_test(
