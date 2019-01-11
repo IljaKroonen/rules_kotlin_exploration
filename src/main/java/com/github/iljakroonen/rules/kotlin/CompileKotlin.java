@@ -33,7 +33,9 @@ class CompileKotlin {
                     "-jdk-home",
                     jdkHome,
                     "-module-name",
-                    moduleName
+                    moduleName,
+                    "-jvm-target",
+                    "1.8"
             };
 
             ArrayList<String> kotlincArgs = new ArrayList<>();
