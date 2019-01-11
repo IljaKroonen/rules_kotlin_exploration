@@ -8,12 +8,16 @@ def _kt_jvm_library_impl(ctx):
             src_file_paths.append(file.path)
 
     dep_jars = []
-    runtime_deps = [
-        JavaInfo(
-            output_jar = ctx.attr._kotlin_stdlib.files.to_list()[0],
-            compile_jar = ctx.attr._kotlin_stdlib.files.to_list()[0],
-        ),
-    ]
+    runtime_deps = []
+    compile_cp = []
+
+    for stdlib_jar in ctx.attr._kotlin_stdlib.files:
+        compile_cp.append(stdlib_jar.path)
+        runtime_deps.append(JavaInfo(
+            output_jar = stdlib_jar,
+            compile_jar = stdlib_jar,
+        ))
+
     for dep in ctx.attr.deps:
         java_info = dep[JavaInfo]
         runtime_deps.append(java_info)
@@ -22,7 +26,6 @@ def _kt_jvm_library_impl(ctx):
         java_info = dep[JavaInfo]
         runtime_deps.append(java_info)
 
-    compile_cp = []
     for dep_jar in dep_jars:
         compile_cp.append(dep_jar.path)
 

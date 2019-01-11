@@ -13,6 +13,8 @@ java_import(
     name = "kotlin-stdlib",
     jars = [
         "lib/kotlin-stdlib.jar",
+        "lib/kotlin-stdlib-jdk8.jar",
+        "lib/kotlin-stdlib-jdk7.jar",
     ],
     visibility = [
         "//visibility:public",
