@@ -12,3 +12,9 @@ kotlin_repositories()
 load("//third_party/jvm:workspace.bzl", "maven_dependencies")
 
 maven_dependencies()
+
+http_jar(
+    name = "bazel_deps",
+    sha256 = "fd27227dd47bd3fb0e1bca912167d20e4655845a2af4f162de682ec6a3babc83",
+    url = "https://github.com/IljaKroonen/artifacts/blob/00d758907f5e6649aa42566d324b6f11e496b3e2/parseproject_deploy_1af8921d52f053fad575f26762533a3823b4a847.jar?raw=true",
+)
