@@ -25,7 +25,9 @@ class CompileKotlin {
                     "-cp",
                     compileClasspath,
                     "-jdk-home",
-                    jdkHome
+                    jdkHome,
+                    "-jvm-target",
+                    "1.8"
             };
 
             ArrayList<String> kotlincArgs = new ArrayList<>();
