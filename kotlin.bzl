@@ -216,7 +216,7 @@ def kt_jvm_test(
         name = "%s_lib" % name,
         deps = deps,
         srcs = srcs,
-        visibility = ["//visibility:private"],
+        visibility = visibility,
         testonly = True,
     )
 
