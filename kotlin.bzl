@@ -86,6 +86,11 @@ def _kt_jvm_library_impl(ctx):
             runtime_deps = runtime_deps,
             exports = exports,
         ),
+        DefaultInfo(
+            runfiles = ctx.runfiles(
+                collect_default = True,
+            ),
+        ),
     ]
 
 kt_jvm_library = rule(
@@ -133,6 +138,10 @@ kt_jvm_library = rule(
         ),
         "resources": attr.label_list(
             doc = """Resources to be included in the jar.""",
+            allow_files = True,
+            default = [],
+        ),
+        "data": attr.label_list(
             allow_files = True,
             default = [],
         ),

@@ -14,6 +14,9 @@ kt_jvm_library(
     srcs = [
         "HelloWorld.kt",
     ],
+    data = [
+        "//data:config",
+    ],
     resources = [
         "//main/src/main/resources",
     ],
