@@ -38,7 +38,9 @@ class CompileKotlin {
                     "-jvm-target",
                     "1.8",
                     "-kotlin-home",
-                    kotlinHome
+                    kotlinHome,
+                    "-language-version",
+                    "1.2"
             };
 
             ArrayList<String> kotlincArgs = new ArrayList<>();
