@@ -17,6 +17,20 @@ dependencies:
       modules: ["core", "assertions", "runner-junit4"]
       version: "3.1.9"
       lang: kotlin
+  com.google.dagger:
+    dagger:
+      version: "2.20"
+      lang: java
+    dagger-compiler:
+      version: "2.20"
+      lang: java
+    dagger-producers:
+      version: "2.20"
+      lang: java
+  javax.inject:
+    javax.inject:
+      version: "1"
+      lang: java
 
 replacements:
   org.jetbrains.kotlin:
