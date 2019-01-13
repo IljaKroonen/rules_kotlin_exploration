@@ -1,9 +1,6 @@
 package com.github.iljakroonen.counter
 
-import dagger.Component
-
-@Component
-class Counter {
+open class Counter {
     private var currentCount = 0L
 
     fun count() {

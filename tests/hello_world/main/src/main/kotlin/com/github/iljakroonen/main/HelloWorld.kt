@@ -23,7 +23,7 @@ fun main(args: Array<String>) {
         info { "Awesome!" }
     }
 
-    val counter = DaggerMainProvider.create().counter()
+    val counter = DaggerExampleComponent.create().counter()
     counter.count()
 
     info {

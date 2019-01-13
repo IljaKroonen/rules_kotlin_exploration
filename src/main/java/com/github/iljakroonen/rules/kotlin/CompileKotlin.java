@@ -2,14 +2,14 @@ package com.github.iljakroonen.rules.kotlin;
 
 import com.google.devtools.build.buildjar.jarhelper.JarCreator;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 class CompileKotlin {
     private static String[] splitPathArg(String arg) {
@@ -29,27 +29,42 @@ class CompileKotlin {
 
             args.add("-Xplugin=" + kotlinHome + "/lib/kotlin-annotation-processing.jar");
 
-            args.add("-P");
-            args.add("plugin:org.jetbrains.kotlin.kapt3:sources=" + sourcePath.toString());
-            args.add("-P");
-            args.add("plugin:org.jetbrains.kotlin.kapt3:classes=" + classesPath);
-            args.add("-P");
-            args.add("plugin:org.jetbrains.kotlin.kapt3:stubs=" + tempDirectory.toString());
-            args.add("-P");
-            args.add("plugin:org.jetbrains.kotlin.kapt3:incrementalData=" + tempDirectory.toString());
-            args.add("-P");
-            args.add("plugin:org.jetbrains.kotlin.kapt3:aptMode=stubsAndApt");
+            // https://github.com/bazelbuild/rules_kotlin/blob/master/src/main/kotlin/io/bazel/kotlin/builder/utils/KotlinCompilerPluginArgsEncoder.kt
+            // processors arg does not work without this
+            Map<String, List<String>> pluginArgs = new HashMap<>();
 
-            args.add("-P");
-            args.add("plugin:org.jetbrains.kotlin.kapt3:processors=" + String.join(",", processors));
+            pluginArgs.put("sources", Collections.singletonList(sourcePath.toString()));
+            pluginArgs.put("classes", Collections.singletonList(classesPath.toString()));
+            pluginArgs.put("stubs", Collections.singletonList(tempDirectory.toString()));
+            pluginArgs.put("incrementalData", Collections.singletonList(tempDirectory.toString()));
+            pluginArgs.put("aptMode", Collections.singletonList("stubsAndApt"));
+            pluginArgs.put("correctErrorTypes", Collections.singletonList("true"));
+            pluginArgs.put("processors", Collections.singletonList(String.join(",", processors)));
+            pluginArgs.put("apclasspath", Arrays.asList(processorPath));
 
-            for (String s : processorPath) {
-                args.add("-P");
-                args.add("plugin:org.jetbrains.kotlin.kapt3:apclasspath=" + s);
+            System.out.println(pluginArgs);
+
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(os);
+
+            oos.writeInt(pluginArgs.size());
+
+            for (Map.Entry<String, List<String>> entry : pluginArgs.entrySet()) {
+                oos.writeUTF(entry.getKey());
+
+                oos.writeInt(entry.getValue().size());
+
+                for (String value : entry.getValue()) {
+                    oos.writeUTF(value);
+                }
             }
 
+            oos.flush();
+
+            String base64 = Base64.getEncoder().encodeToString(os.toByteArray());
+
             args.add("-P");
-            args.add("plugin:org.jetbrains.kotlin.kapt3:correctErrorTypes=true");
+            args.add("plugin:org.jetbrains.kotlin.kapt3:configuration=" + base64);
 
             args.add("-Xplugin=" + jdkHome + "/lib/tools.jar");
         }
@@ -78,7 +93,6 @@ class CompileKotlin {
             Path generatedSourcesDirectory = Files.createTempDirectory("kotlinc_generated");
 
             String[] kotlincFlags = new String[]{
-                    "-args",
                     "-d",
                     tempCompilationDirectory.toString(),
                     "-cp",
@@ -96,10 +110,15 @@ class CompileKotlin {
             };
 
             ArrayList<String> kotlincArgs = new ArrayList<>();
-            kotlincArgs.add(kotlinHome + "/bin/kotlin-compiler");
+            kotlincArgs.add(kotlinHome + "/bin/kotlinc");
             kotlincArgs.addAll(Arrays.asList(kotlincFlags));
             kotlincArgs.addAll(Arrays.asList(kotlinSources));
             kotlincArgs.addAll(buildKaptArgs(kotlinHome, processors, processorPath, generatedSourcesDirectory, tempCompilationDirectory, jdkHome));
+
+            StringBuilder cmd = new StringBuilder();
+            for (String e : kotlincArgs) {
+                cmd.append(" ").append(e);
+            }
 
             Process process = new ProcessBuilder()
                     .command(kotlincArgs)
@@ -111,11 +130,10 @@ class CompileKotlin {
             if (outCode != 0)
                 System.exit(outCode);
 
-            System.out.println("GOOBY");
+            System.out.println("Sources generated");
             Files.walk(generatedSourcesDirectory)
                     .filter(Files::isRegularFile)
                     .forEach(System.out::println);
-            System.out.println("PLEASE");
 
             JarCreator jarCreator = new JarCreator(outputJar);
             jarCreator.addDirectory(tempCompilationDirectory);

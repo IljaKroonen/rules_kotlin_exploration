@@ -8,7 +8,4 @@ kt_jvm_library(
     visibility = [
         "//main:__subpackages__",
     ],
-    deps = [
-        "//third_party:dagger",
-    ],
 )
