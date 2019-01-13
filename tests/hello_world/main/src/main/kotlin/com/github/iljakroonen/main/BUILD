@@ -11,9 +11,9 @@ kt_jvm_import(
 
 kt_jvm_library(
     name = "main_lib",
-    srcs = [
-        "HelloWorld.kt",
-    ],
+    srcs = glob([
+        "*.kt",
+    ]),
     data = [
         "//data:config",
     ],
@@ -23,7 +23,9 @@ kt_jvm_library(
     deps = [
         ":logging",
         "//add/src/main/kotlin/com/github/iljakroonen/add",
+        "//counter/src/main/kotlin/com/github/iljakroonen/counter",
         "//subtract/src/main/java/com/github/iljakroonen/subtract",
+        "//third_party:dagger",
     ],
 )
 

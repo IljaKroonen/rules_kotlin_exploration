@@ -12,21 +12,73 @@ import java.util.Collections;
 import java.util.List;
 
 class CompileKotlin {
+    private static String[] splitPathArg(String arg) {
+        if (arg.equals("")) {
+            return new String[0];
+        }
+
+        return arg.split(System.getProperty("path.separator"));
+    }
+
+    private static List<String> buildKaptArgs(String kotlinHome, String[] processors, String[] processorPath,
+                                              Path sourcePath, Path classesPath, String jdkHome) throws Exception {
+        ArrayList<String> args = new ArrayList<>();
+
+        if (processors.length > 0) {
+            Path tempDirectory = Files.createTempDirectory("kotlinc_plugins_temp");
+
+            args.add("-Xplugin=" + kotlinHome + "/lib/kotlin-annotation-processing.jar");
+
+            args.add("-P");
+            args.add("plugin:org.jetbrains.kotlin.kapt3:sources=" + sourcePath.toString());
+            args.add("-P");
+            args.add("plugin:org.jetbrains.kotlin.kapt3:classes=" + classesPath);
+            args.add("-P");
+            args.add("plugin:org.jetbrains.kotlin.kapt3:stubs=" + tempDirectory.toString());
+            args.add("-P");
+            args.add("plugin:org.jetbrains.kotlin.kapt3:incrementalData=" + tempDirectory.toString());
+            args.add("-P");
+            args.add("plugin:org.jetbrains.kotlin.kapt3:aptMode=stubsAndApt");
+
+            args.add("-P");
+            args.add("plugin:org.jetbrains.kotlin.kapt3:processors=" + String.join(",", processors));
+
+            for (String s : processorPath) {
+                args.add("-P");
+                args.add("plugin:org.jetbrains.kotlin.kapt3:apclasspath=" + s);
+            }
+
+            args.add("-P");
+            args.add("plugin:org.jetbrains.kotlin.kapt3:correctErrorTypes=true");
+
+            args.add("-Xplugin=" + jdkHome + "/lib/tools.jar");
+        }
+
+        for (String arg : args) {
+            System.out.println(arg);
+        }
+
+        return args;
+    }
+
     public static void main(String[] args) {
         try {
-            String kotlincExecutablePath = args[0];
             String jdkHome = args[1];
-            String[] kotlinSources = args[2].split(System.getProperty("path.separator"));
+            String[] kotlinSources = splitPathArg(args[2]);
             String compileClasspath = args[3];
             Path outputJar = Paths.get(args[4]);
             String moduleName = args[5];
             Path outputSourceJar = Paths.get(args[6]);
-            String[] resources = args[7].split(System.getProperty("path.separator"));
+            String[] resources = splitPathArg(args[7]);
             String kotlinHome = args[8];
+            String[] processors = splitPathArg(args[9]);
+            String[] processorPath = splitPathArg(args[10]);
 
             Path tempCompilationDirectory = Files.createTempDirectory("kotlinc_outputs");
+            Path generatedSourcesDirectory = Files.createTempDirectory("kotlinc_generated");
 
             String[] kotlincFlags = new String[]{
+                    "-args",
                     "-d",
                     tempCompilationDirectory.toString(),
                     "-cp",
@@ -44,9 +96,10 @@ class CompileKotlin {
             };
 
             ArrayList<String> kotlincArgs = new ArrayList<>();
-            kotlincArgs.add(kotlincExecutablePath);
-            kotlincArgs.addAll(Arrays.asList(kotlinSources));
+            kotlincArgs.add(kotlinHome + "/bin/kotlin-compiler");
             kotlincArgs.addAll(Arrays.asList(kotlincFlags));
+            kotlincArgs.addAll(Arrays.asList(kotlinSources));
+            kotlincArgs.addAll(buildKaptArgs(kotlinHome, processors, processorPath, generatedSourcesDirectory, tempCompilationDirectory, jdkHome));
 
             Process process = new ProcessBuilder()
                     .command(kotlincArgs)
@@ -57,6 +110,12 @@ class CompileKotlin {
 
             if (outCode != 0)
                 System.exit(outCode);
+
+            System.out.println("GOOBY");
+            Files.walk(generatedSourcesDirectory)
+                    .filter(Files::isRegularFile)
+                    .forEach(System.out::println);
+            System.out.println("PLEASE");
 
             JarCreator jarCreator = new JarCreator(outputJar);
             jarCreator.addDirectory(tempCompilationDirectory);
@@ -123,10 +182,13 @@ class CompileKotlin {
                 sourceJarCreator.addEntry(packageName.replace('.', '/') + "/" + sourcePath.getFileName().toString(), sourcePath);
             }
 
+            sourceJarCreator.addDirectory(generatedSourcesDirectory);
+
             sourceJarCreator.execute();
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
         }
+        System.exit(0);
     }
 }

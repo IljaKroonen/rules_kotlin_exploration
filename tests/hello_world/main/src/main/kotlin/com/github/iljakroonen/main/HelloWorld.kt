@@ -22,4 +22,11 @@ fun main(args: Array<String>) {
     if (config["enable_awesomeness"] == "1") {
         info { "Awesome!" }
     }
+
+    val counter = DaggerMainProvider.create().counter()
+    counter.count()
+
+    info {
+        "We counted one time! The result is ${counter.count}"
+    }
 }

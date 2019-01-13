@@ -1,3 +1,9 @@
+load(
+    "//:plugins.bzl",
+    _kt_jvm_plugin_aspect = "kt_jvm_plugin_aspect",
+    _merge_plugin_infos = "merge_plugin_infos",
+)
+
 def _kt_jvm_library_impl(ctx):
     src_files = []
     src_file_paths = []
@@ -7,7 +13,7 @@ def _kt_jvm_library_impl(ctx):
             src_files.append(file)
             src_file_paths.append(file.path)
 
-    dep_jars = []
+    dep_jars = java_common.merge([d[JavaInfo] for d in ctx.attr.deps]).compile_jars
     runtime_deps = []
     compile_cp = []
 
@@ -21,7 +27,6 @@ def _kt_jvm_library_impl(ctx):
     for dep in ctx.attr.deps:
         java_info = dep[JavaInfo]
         runtime_deps.append(java_info)
-        dep_jars += java_info.compile_jars.to_list()
     for dep in ctx.attr.runtime_deps:
         java_info = dep[JavaInfo]
         runtime_deps.append(java_info)
@@ -48,10 +53,19 @@ def _kt_jvm_library_impl(ctx):
             resource_paths.append(resource_file.path)
             resource_files.append(resource_file)
 
+    plugin_info = _merge_plugin_infos(ctx.attr.deps)
+    processors = []
+    processorpath = []
+    processorfiles = []
+    for plugin in plugin_info.annotation_processors:
+        processors.append(plugin.processor_class)
+        processorpath += [f.path for f in plugin.classpath]
+        processorfiles += plugin.classpath
+
     module_name = ctx.label.package.replace("/", "_") + "-" + ctx.label.name
     ctx.actions.run(
         executable = "%s/jre/bin/java" % jdk_home,
-        inputs = src_files + dep_jars + ctx.attr._java_runtime.files.to_list() + ctx.attr._compile_kotlin.files.to_list() + resource_files,
+        inputs = src_files + dep_jars.to_list() + ctx.attr._java_runtime.files.to_list() + ctx.attr._compile_kotlin.files.to_list() + resource_files + processorfiles,
         tools = ctx.attr._compiler.data_runfiles.files.to_list(),
         progress_message = """Compiling %s kotlin source files""" % len(ctx.attr.srcs),
         arguments = [
@@ -66,6 +80,8 @@ def _kt_jvm_library_impl(ctx):
             ctx.outputs.srcjar.path,
             ctx.host_configuration.host_path_separator.join(resource_paths),
             "external/org_jetbrains_kotlin",
+            ctx.host_configuration.host_path_separator.join(processors),
+            ctx.host_configuration.host_path_separator.join(processorpath),
         ],
         outputs = [
             ctx.outputs.jar,
@@ -116,6 +132,7 @@ kt_jvm_library = rule(
                 [JavaInfo],
             ],
             allow_files = False,
+            aspects = [_kt_jvm_plugin_aspect],
         ),
         "runtime_deps": attr.label_list(
             doc = """Libraries to make available to the final binary or test at runtime only. Like ordinary deps, these will appear on the runtime classpath, but unlike them, not on the compile-time classpath. Dependencies needed only at runtime should be listed here.""",
